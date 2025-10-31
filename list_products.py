@@ -8,11 +8,15 @@ number_of_items_to_fetch = 1 # Set to None to fetch all items
 if not stripe.api_key:
     raise ValueError("❌ STRIPE_KEY not found in environment variables!")
 
-def list_all_products(): 
+def list_products(number_items): 
+
+    if number_items>0:
+        number_of_items_to_fetch = number_items
+    my_stripe_products = get_all_stripe_objects(stripe.Product, limit=number_of_items_to_fetch)
+    my_stripe_prices = get_all_stripe_objects(stripe.Price, limit=number_of_items_to_fetch)
     
     print(f"🔍 Fetching all products from Stripe {STRIPE_MODE.upper()} instance...\n")
     print(f"📈 TOTAL PRODUCTS => {len(all_stripe_products)} :: 💲 TOTAL PRICES => {len(all_stripe_prices)}")
-    print(f"⛏ FETCHING {number_of_items_to_fetch} PRODUCTS and PRICES \n")
     # Retrieve all products (Stripe auto-paginates)
     # for product in stripe.Product.list(limit=100).auto_paging_iter():
     #     print(f"ID: {product.id}")
@@ -21,7 +25,7 @@ def list_all_products():
     #     print(f"Price: {product.default_price}")
     #     print(f"Description: {product.description or '—'}")
     #     print("-" * 50)
-
+    print(f"\n⛏ FETCHING {number_of_items_to_fetch} PRODUCTS 🥇📗📀 ....\n")
     for product in my_stripe_products:
         print(f"ID: {product.id}")
         print(f"Name: {product.name}")
@@ -30,6 +34,7 @@ def list_all_products():
         print(f"Description: {product.description or '—'}")
         print("-" * 50)
 
+    print(f"\n⛏ FETCHING {number_of_items_to_fetch} PRICES 💲💲💲 ....\n") 
     for price in my_stripe_prices:
         print(f"ID: {price.id}")
 
@@ -86,10 +91,9 @@ def get_all_stripe_objects(stripe_resource, limit=None):
 
     return objects
 
-all_stripe_products = get_all_stripe_objects(stripe.Product, limit=None)
-all_stripe_prices = get_all_stripe_objects(stripe.Price, limit=None)
-my_stripe_products = get_all_stripe_objects(stripe.Product, limit=number_of_items_to_fetch)
-my_stripe_prices = get_all_stripe_objects(stripe.Price, limit=number_of_items_to_fetch)
+#all_stripe_products = get_all_stripe_objects(stripe.Product, limit=None)
+#all_stripe_prices = get_all_stripe_objects(stripe.Price, limit=None)
+
 
 if __name__ == "__main__":
-    list_all_products()
+    list_products()

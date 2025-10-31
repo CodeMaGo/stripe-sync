@@ -8,6 +8,16 @@ Small utilities to export/import Stripe products & prices and inspect local expo
 - List products from Stripe.
 - Scripts: export_products.py, export_prices.py, import_products.py, list_products.py, main.py
 
+## Repo contents (summary)
+- export_products.py — Export Stripe Product objects (and default prices) to JSON.
+- export_prices.py — Export Stripe Price objects to JSON and CSV.
+- import_products.py — Import products (and create prices) into Stripe from exported JSON.
+- list_products.py — CLI helper to list products & prices (see "Notes" below).
+- main.py — Simple CLI wrapper for common operations.
+- config.py — Loads environment variables and returns a configured Stripe client.
+- exports/ — sample export files (JSON/CSV)
+- requirements.txt, .env.example (not committed secrets)
+
 ## Requirements
 - Python 3.8+
 - See requirements.txt for dependencies
@@ -49,26 +59,33 @@ The project uses python-dotenv or similar (see config.py) to load these values.
 
 Run the small CLI in main.py:
 ```sh
-python main.py export    # export products/prices from Stripe to files
+python main.py export [products|prices] [csv|json]  # export products/prices from Stripe to files
 python main.py import    # import products/prices from exported JSON to Stripe
-python main.py list      # list first page of products from Stripe
+python main.py list <number_of_products>    # list first page of products from Stripe
 ```
 
 Or run scripts directly:
 ```sh
-python export_products.py
+python export_products.py [csv|json]
 python export_prices.py
 python import_products.py
-python list_products.py
+python list_products.py <number_of_products>
 ```
 
-Always run first with STRIPE_MODE=test and test keys.
+Recommended workflow:
+1. Set STRIPE_MODE=test and use STRIPE_TEST_KEY.
+2. Run export to capture current Stripe state.
+3. Inspect exported JSON/CSV files.
+4. Run import only after verifying mapping and edge cases (null unit_amount, recurring prices).
+5. When ready, switch to live keys.
 
 ## Exports & Output
 Default output folder is configured with EXPORT_FOLDER. Typical files:
-- products_export.json (and .old)
+- live_products_export.json / .csv
+- sandbox_products_export.json / .csv
 - live_prices_export.json / .csv
-- sandbox_prices_export.csv
+- live_prices_export.json / .csv
+- sandbox_prices_export.json / .csv
 
 Check the CSV/JSON format in the sample export files in the repo.
 
@@ -77,17 +94,21 @@ Check the CSV/JSON format in the sample export files in the repo.
 - Recurring and one-time prices are handled differently; verify the mapping logic.
 - Use test mode before running against live Stripe keys.
 - Do not commit your .env or API keys.
+- Export scripts use Stripe pagination (auto_paging_iter() / manual paging), so large exports can take time.
+- Importer may skip prices with null unit_amount (custom/donation prices). Inspect import_products.py before running.
+
 
 ## Troubleshooting
 - Invalid/insufficient API key errors → verify STRIPE_* keys and STRIPE_MODE.
 - Large exports → scripts use Stripe pagination (may take time).
 
 ## Contributing
-- Add CLI flags to control output paths and dry-run mode.
-- Add unit tests around import/export logic.
+- Add CLI flags (dry-run, limit, output path).
+- Add unit tests for import/export mapping and edge cases.
+- Improve logging, error handling and retries.
 
 ## License
-Specify project license as appropriate.
+[![CC0](https://i.creativecommons.org/p/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
 
 ## Stripe API documentation (reference)
 

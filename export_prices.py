@@ -6,11 +6,12 @@ from config import get_stripe_client, EXPORT_PRICES_FILE, STRIPE_MODE, EXPORT_FO
 stripe = get_stripe_client()
 
 stripe_instance =  "live_" if STRIPE_MODE == "live" else "sandbox_"
-format = "CSV" if (len(sys.argv)>1 and sys.argv[1]) == "csv" else  "JSON"
+
 file_path_and_part_name = EXPORT_FOLDER + stripe_instance + EXPORT_PRICES_FILE
 
-def export_prices():
+def export_prices(format="csv"):
     print(f"🔄 Exporting prices from Stripe {STRIPE_MODE.upper()} instance...")
+    file_format = "CSV" if format == "csv" else  "JSON"
     file_name = file_path_and_part_name 
     
     prices = stripe.Price.list(limit=100) # Use pagination for more than 100 prices
@@ -25,7 +26,7 @@ def export_prices():
     #print(f"✅ Exported {len(all_prices)} products to {file_name}")
 
     try:
-        if format == "JSON":
+        if file_format == "JSON":
             file_name += ".json"
             while prices.has_more:
                 prices = stripe.Price.list(limit=100, starting_after=prices.data[-1].id)
@@ -52,4 +53,4 @@ def export_prices():
         print("I/O error")
 
 if __name__ == "__main__":
-    export_prices()
+    export_prices(format)
